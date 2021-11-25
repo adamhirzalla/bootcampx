@@ -14,18 +14,17 @@ pool.connect(()=>{
 });
 
 const cohort = process.argv[2];
-const limit = process.argv[3];
 
 pool.query(`
-SELECT students.id AS student_id, students.name AS name, cohorts.name AS cohort
-FROM students
-JOIN cohorts ON cohorts.id = cohort_id
-WHERE cohorts.name LIKE '%${cohort}%'
-LIMIT ${limit || 5};
+SELECT DISTINCT teachers.name AS teacher, cohorts.name AS cohort
+FROM teachers 
+  JOIN assistance_requests ON teachers.id = teacher_id
+  JOIN students ON students.id = student_id
+  JOIN cohorts ON cohorts.id = cohort_id
+WHERE cohorts.name LIKE '%${cohort || 'JUL02'}%'
+ORDER BY teachers.name;
 `)
   .then(res => {
-    res.rows.forEach(user => {
-      console.log(`${user.name} has an id of ${user.student_id} and was in the ${user.cohort} cohort`);
-    });
+    res.rows.forEach(row => console.log(`${row.cohort}: ${row.teacher}`));
   })
   .catch(err => console.error('query error', err.stack));
